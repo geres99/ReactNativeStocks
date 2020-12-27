@@ -21,15 +21,15 @@ export default function App() {
         positionX: maxWidth,
         positionY: maxHeight,
         value: 1,
-        changingX: 1,
-        changingY: 1,
+        changingX: 10,
+        changingY: 10,
       },
       {
         positionX: minWidth,
         positionY: minHeight,
         value: 1,
-        changingX: 1,
-        changingY: 1,
+        changingX: 10,
+        changingY: 10,
       },
     ],
   });
@@ -41,10 +41,10 @@ export default function App() {
     let intervalFunction = () => {
       for (let i = 0; i < dice.dices.length; i++) {
         if (dice.dices[i].positionX >= maxWidth) {
-          dice.dices[i].changingX = -1;
+          dice.dices[i].changingX = -10;
         }
         if (dice.dices[i].positionX <= minWidth) {
-          dice.dices[i].changingX = 1;
+          dice.dices[i].changingX = 10;
         }
         dice.dices[i].positionX =
           dice.dices[i].positionX + dice.dices[i].changingX;
@@ -52,7 +52,7 @@ export default function App() {
         setRerenderInterval(Math.random());
       }
     };
-    setInterval(intervalFunction, 100);
+    setInterval(intervalFunction, 30);
     setDice(dice);
     setRerender(!rerender);
   };
