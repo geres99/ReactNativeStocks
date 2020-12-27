@@ -46,8 +46,8 @@ export default function App() {
           yAxisInterval={1} // optional, defaults to 1
           chartConfig={{
             backgroundColor: "#e26a00",
-            backgroundGradientFrom: "#fb8c00",
-            backgroundGradientTo: "#ffa726",
+            backgroundGradientFrom: "#007acc",
+            backgroundGradientTo: "#0099ff",
             decimalPlaces: 2, // optional, defaults to 2dp
             color: (opacity = 1) => `rgba(255, 255, 255, ${opacity})`,
             labelColor: (opacity = 1) => `rgba(255, 255, 255, ${opacity})`,
@@ -57,7 +57,7 @@ export default function App() {
             propsForDots: {
               r: "6",
               strokeWidth: "2",
-              stroke: "#ffa726",
+              stroke: "#003d66",
             },
           }}
           bezier
