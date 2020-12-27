@@ -41,13 +41,38 @@ export default function App() {
     let intervalFunction = () => {
       for (let i = 0; i < dice.dices.length; i++) {
         if (dice.dices[i].positionX >= maxWidth) {
-          dice.dices[i].changingX = -10;
+          dice.dices[i].changingX = Math.ceil(Math.random() * 3) * -3;
         }
         if (dice.dices[i].positionX <= minWidth) {
-          dice.dices[i].changingX = 10;
+          dice.dices[i].changingX = Math.ceil(Math.random() * 3) * 3;
+        }
+        if (dice.dices[i].positionY >= maxHeight) {
+          dice.dices[i].changingY = Math.ceil(Math.random() * 3) * -3;
+        }
+        if (dice.dices[i].positionY <= minHeight) {
+          dice.dices[i].changingY = Math.ceil(Math.random() * 3) * 3;
+        }
+        let y = 0;
+        if (dice.dices[i + 1] !== undefined) {
+          y = i;
+        } else {
+          y = 0;
+        }
+        if (
+          dice.dices[y].positionX >= dice.dices[y + 1].positionX - 50 &&
+          dice.dices[y].positionX <= dice.dices[y + 1].positionX + 50 &&
+          dice.dices[y].positionY >= dice.dices[y + 1].positionY - 50 &&
+          dice.dices[y].positionY <= dice.dices[y + 1].positionY + 50
+        ) {
+          dice.dices[y].changingX = dice.dices[y].changingX * -1;
+          dice.dices[y + 1].changingX = dice.dices[y + 1].changingX * -1;
+          dice.dices[y].changingY = dice.dices[y].changingY * -1;
+          dice.dices[y + 1].changingY = dice.dices[y + 1].changingY * -1;
         }
         dice.dices[i].positionX =
           dice.dices[i].positionX + dice.dices[i].changingX;
+        dice.dices[i].positionY =
+          dice.dices[i].positionY + dice.dices[i].changingY;
         setDice(dice);
         setRerenderInterval(Math.random());
       }
