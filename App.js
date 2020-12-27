@@ -13,6 +13,7 @@ export default function App() {
   let minWidth = windowWidth * 0.9 * -0.5;
 
   let [rerender, setRerender] = React.useState(true);
+  let [rerenderInterval, setRerenderInterval] = React.useState(true);
   let [dice, setDice] = React.useState({
     diceMaxRoll: 6,
     dices: [
@@ -20,11 +21,15 @@ export default function App() {
         positionX: maxWidth,
         positionY: maxHeight,
         value: 1,
+        changingX: 1,
+        changingY: 1,
       },
       {
         positionX: minWidth,
         positionY: minHeight,
         value: 1,
+        changingX: 1,
+        changingY: 1,
       },
     ],
   });
@@ -33,6 +38,21 @@ export default function App() {
     for (let i = 0; i < dice.dices.length; i++) {
       dice.dices[i].value = Math.ceil(Math.random() * dice.diceMaxRoll);
     }
+    let intervalFunction = () => {
+      for (let i = 0; i < dice.dices.length; i++) {
+        if (dice.dices[i].positionX >= maxWidth) {
+          dice.dices[i].changingX = -1;
+        }
+        if (dice.dices[i].positionX <= minWidth) {
+          dice.dices[i].changingX = 1;
+        }
+        dice.dices[i].positionX =
+          dice.dices[i].positionX + dice.dices[i].changingX;
+        setDice(dice);
+        setRerenderInterval(Math.random());
+      }
+    };
+    setInterval(intervalFunction, 100);
     setDice(dice);
     setRerender(!rerender);
   };
