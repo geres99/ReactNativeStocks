@@ -11,6 +11,61 @@ import {
 } from "react-native-chart-kit";
 
 export default function App() {
+  let [gameTime, setGameTime] = React.useState(1546340400000);
+
+  let dateFormat = (milisecs) => {
+    let ourDate = new Date(milisecs);
+    let day = ourDate.getDate();
+    if (day.toString().length < 2) {
+      day = "0" + day;
+    }
+    let month = ourDate.getMonth() + 1;
+    if (month.toString().length < 2) {
+      month = "0" + month;
+    }
+    let year = ourDate.getFullYear();
+    return year + "-" + month + "-" + day;
+  };
+  let simpleDateFormat = (milisecs) => {
+    let ourDate = new Date(milisecs);
+    let day = ourDate.getDate();
+    if (day.toString().length < 2) {
+      day = "0" + day;
+    }
+    let month = ourDate.getMonth() + 1;
+    if (month.toString().length < 2) {
+      month = "0" + month;
+    }
+    return day + "." + month;
+  };
+
+  let teslaData = require("./tesla.json");
+
+  let oldTesla = () => {
+    let timeTravelTime = gameTime;
+    let oldData = { price: [], day: [] };
+    let check = () => {
+      if (
+        teslaData["Time Series (Daily)"][dateFormat(timeTravelTime)] ===
+        undefined
+      ) {
+        timeTravelTime = timeTravelTime - 86400000;
+        check();
+      } else {
+        oldData.price.push(
+          teslaData["Time Series (Daily)"][dateFormat(timeTravelTime)][
+            "1. open"
+          ]
+        );
+        oldData.day.push(simpleDateFormat(timeTravelTime));
+        timeTravelTime = timeTravelTime - 86400000;
+      }
+      if (oldData.price.length >= 5) {
+        return oldData;
+      }
+    };
+  };
+
   let [year2019, setYear2019] = React.useState([
     "01.01",
     "02.01",
@@ -39,8 +94,22 @@ export default function App() {
   let nextDay = () => {
     stockData.day = stockData.day.splice(1, 5);
     stockData.price = stockData.price.splice(1, 5);
-    stockData.day.push(year2019.splice(stockData.day.length + 1, 1));
-    stockData.price.push(Math.random() * 100);
+    let check = () => {
+      if (
+        teslaData["Time Series (Daily)"][dateFormat(gameTime)] === undefined
+      ) {
+        gameTime = gameTime + 86400000;
+        check();
+      } else {
+        stockData.price.push(
+          teslaData["Time Series (Daily)"][dateFormat(gameTime)]["1. open"]
+        );
+        stockData.day.push(simpleDateFormat(gameTime));
+        gameTime = gameTime + 86400000;
+      }
+    };
+    check();
+    setGameTime(gameTime);
     setStockData(stockData);
     setRerender(!rerender);
   };
