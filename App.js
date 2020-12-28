@@ -42,7 +42,7 @@ export default function App() {
   let teslaData = require("./tesla.json");
 
   let oldTesla = () => {
-    let timeTravelTime = gameTime;
+    let timeTravelTime = gameTime - 86400000;
     let oldData = { price: [], day: [] };
     let check = () => {
       if (
@@ -61,34 +61,28 @@ export default function App() {
         timeTravelTime = timeTravelTime - 86400000;
       }
       if (oldData.price.length >= 5) {
-        return oldData;
+        return;
       }
+      check();
     };
+    check();
+    if (oldData.price.length >= 5) {
+      let oldDataGoodFormat = {
+        price: [],
+        day: [],
+      };
+      for (let i = oldData.price.length - 1; i > 0; i = i - 1) {
+        oldDataGoodFormat.price.push(oldData.price[i]);
+        oldDataGoodFormat.day.push(oldData.day[i]);
+      }
+      return oldDataGoodFormat;
+    }
   };
-
-  let [year2019, setYear2019] = React.useState([
-    "01.01",
-    "02.01",
-    "03.01",
-    "04.01",
-    "05.01",
-    "06.01",
-    "07.01",
-    "08.01",
-    "09.01",
-    "10.01",
-  ]);
 
   let [rerender, setRerender] = React.useState(true);
   let [stockData, setStockData] = React.useState({
-    day: year2019.slice(0, 5),
-    price: [
-      Math.random() * 100,
-      Math.random() * 100,
-      Math.random() * 100,
-      Math.random() * 100,
-      Math.random() * 100,
-    ],
+    day: oldTesla().day,
+    price: oldTesla().price,
   });
 
   let nextDay = () => {
