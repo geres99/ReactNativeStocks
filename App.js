@@ -40,33 +40,38 @@ export default function App() {
   };
 
   let teslaData = require("./tesla.json");
+  let microsoftData = require("./microsoft.json");
+  let [chosenStock, setChosenStock] = React.useState(microsoftData);
 
-  let oldTesla = () => {
-    let timeTravelTime = gameTime - 86400000;
+  let [startSetup, setStartSetup] = React.useState(["x"]);
+  let [chartSetup, setChartSetup] = React.useState([]);
+
+  let chosenOldData = () => {
+    let timeTravelTime = gameTime;
     let oldData = { price: [], day: [] };
     let check = () => {
       if (
-        teslaData["Time Series (Daily)"][dateFormat(timeTravelTime)] ===
+        chosenStock["Time Series (Daily)"][dateFormat(timeTravelTime)] ===
         undefined
       ) {
         timeTravelTime = timeTravelTime - 86400000;
         check();
       } else {
         oldData.price.push(
-          teslaData["Time Series (Daily)"][dateFormat(timeTravelTime)][
+          chosenStock["Time Series (Daily)"][dateFormat(timeTravelTime)][
             "1. open"
           ]
         );
         oldData.day.push(simpleDateFormat(timeTravelTime));
         timeTravelTime = timeTravelTime - 86400000;
       }
-      if (oldData.price.length >= 5) {
+      if (oldData.price.length >= 6) {
         return;
       }
       check();
     };
     check();
-    if (oldData.price.length >= 5) {
+    if (oldData.price.length >= 6) {
       let oldDataGoodFormat = {
         price: [],
         day: [],
@@ -81,22 +86,27 @@ export default function App() {
 
   let [rerender, setRerender] = React.useState(true);
   let [stockData, setStockData] = React.useState({
-    day: oldTesla().day,
-    price: oldTesla().price,
+    day: chosenOldData().day,
+    price: chosenOldData().price,
   });
+
+  let startTrading = () => {
+    setStartSetup([]);
+    setChartSetup(["x"]);
+  };
 
   let nextDay = () => {
     stockData.day = stockData.day.splice(1, 5);
     stockData.price = stockData.price.splice(1, 5);
     let check = () => {
       if (
-        teslaData["Time Series (Daily)"][dateFormat(gameTime)] === undefined
+        chosenStock["Time Series (Daily)"][dateFormat(gameTime)] === undefined
       ) {
         gameTime = gameTime + 86400000;
         check();
       } else {
         stockData.price.push(
-          teslaData["Time Series (Daily)"][dateFormat(gameTime)]["1. open"]
+          chosenStock["Time Series (Daily)"][dateFormat(gameTime)]["1. open"]
         );
         stockData.day.push(simpleDateFormat(gameTime));
         gameTime = gameTime + 86400000;
@@ -110,44 +120,55 @@ export default function App() {
 
   return (
     <View style={styles.container}>
-      <View>
-        <LineChart
-          data={{
-            labels: stockData.day,
-            datasets: [
-              {
-                data: stockData.price,
+      {startSetup.map((x) => (
+        <View>
+          <View>
+            <Button title="Start Trading" onPress={startTrading} />
+          </View>
+        </View>
+      ))}
+      {chartSetup.map((x) => (
+        <View>
+          <LineChart
+            data={{
+              labels: stockData.day,
+              datasets: [
+                {
+                  data: stockData.price,
+                },
+              ],
+            }}
+            width={Dimensions.get("window").width - 10} // from react-native
+            height={220}
+            yAxisLabel="$"
+            yAxisInterval={1} // optional, defaults to 1
+            chartConfig={{
+              backgroundColor: "#e26a00",
+              backgroundGradientFrom: "#007acc",
+              backgroundGradientTo: "#0099ff",
+              decimalPlaces: 2, // optional, defaults to 2dp
+              color: (opacity = 1) => `rgba(255, 255, 255, ${opacity})`,
+              labelColor: (opacity = 1) => `rgba(255, 255, 255, ${opacity})`,
+              style: {
+                borderRadius: 16,
               },
-            ],
-          }}
-          width={Dimensions.get("window").width - 10} // from react-native
-          height={220}
-          yAxisLabel="$"
-          yAxisInterval={1} // optional, defaults to 1
-          chartConfig={{
-            backgroundColor: "#e26a00",
-            backgroundGradientFrom: "#007acc",
-            backgroundGradientTo: "#0099ff",
-            decimalPlaces: 2, // optional, defaults to 2dp
-            color: (opacity = 1) => `rgba(255, 255, 255, ${opacity})`,
-            labelColor: (opacity = 1) => `rgba(255, 255, 255, ${opacity})`,
-            style: {
+              propsForDots: {
+                r: "6",
+                strokeWidth: "2",
+                stroke: "#003d66",
+              },
+            }}
+            bezier
+            style={{
+              marginVertical: 8,
               borderRadius: 16,
-            },
-            propsForDots: {
-              r: "6",
-              strokeWidth: "2",
-              stroke: "#003d66",
-            },
-          }}
-          bezier
-          style={{
-            marginVertical: 8,
-            borderRadius: 16,
-          }}
-        />
-      </View>
-      <Button title="Next Day" onPress={nextDay} />
+            }}
+          />
+          <View>
+            <Button title="Next Day" onPress={nextDay} />
+          </View>
+        </View>
+      ))}
     </View>
   );
 }
@@ -155,7 +176,7 @@ export default function App() {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: "white",
+    backgroundColor: "#b3c6ff",
     alignItems: "center",
     justifyContent: "space-evenly",
   },
