@@ -9,6 +9,7 @@ import {
   ContributionGraph,
   StackedBarChart,
 } from "react-native-chart-kit";
+import RNPickerSelect from "react-native-picker-select";
 
 export default function App() {
   let [gameTime, setGameTime] = React.useState(1546340400000);
@@ -41,12 +42,21 @@ export default function App() {
 
   let teslaData = require("./tesla.json");
   let microsoftData = require("./microsoft.json");
+
+  let [defaultStocks, setDefaultStocks] = React.useState({
+    "tesla data": teslaData,
+    "microsoft data": microsoftData,
+  });
+
   let [chosenStock, setChosenStock] = React.useState(microsoftData);
 
   let [startSetup, setStartSetup] = React.useState(["x"]);
   let [chartSetup, setChartSetup] = React.useState([]);
 
-  let chosenOldData = () => {
+  let chosenOldData = (data) => {
+    if (data !== undefined) {
+      chosenStock = data;
+    }
     let timeTravelTime = gameTime;
     let oldData = { price: [], day: [] };
     let check = () => {
@@ -118,57 +128,70 @@ export default function App() {
     setRerender(!rerender);
   };
 
+  let settingStockData = (value) => {
+    console.log(value);
+    let prepearingName = value + " data";
+    setStockData({
+      day: chosenOldData(defaultStocks[prepearingName]).day,
+      price: chosenOldData(defaultStocks[prepearingName]).price,
+    });
+    setChosenStock(defaultStocks[prepearingName]);
+  };
+
   return (
     <View style={styles.container}>
-      {startSetup.map((x) => (
-        <View>
-          <View>
-            <Button title="Start Trading" onPress={startTrading} />
-          </View>
-        </View>
-      ))}
-      {chartSetup.map((x) => (
-        <View>
-          <LineChart
-            data={{
-              labels: stockData.day,
-              datasets: [
-                {
-                  data: stockData.price,
-                },
-              ],
-            }}
-            width={Dimensions.get("window").width - 10} // from react-native
-            height={220}
-            yAxisLabel="$"
-            yAxisInterval={1} // optional, defaults to 1
-            chartConfig={{
-              backgroundColor: "#e26a00",
-              backgroundGradientFrom: "#007acc",
-              backgroundGradientTo: "#0099ff",
-              decimalPlaces: 2, // optional, defaults to 2dp
-              color: (opacity = 1) => `rgba(255, 255, 255, ${opacity})`,
-              labelColor: (opacity = 1) => `rgba(255, 255, 255, ${opacity})`,
-              style: {
-                borderRadius: 16,
+      <View>
+        <RNPickerSelect
+          onValueChange={(value) => settingStockData(value)}
+          placeholder={{
+            label: "Microsoft",
+            value: "microsoft",
+            color: "black",
+          }}
+          items={[
+            { label: "Tesla", value: "tesla", color: "black" },
+            { label: "Hockey", value: "microsoft", color: "black" },
+          ]}
+        />
+        <LineChart
+          data={{
+            labels: stockData.day,
+            datasets: [
+              {
+                data: stockData.price,
               },
-              propsForDots: {
-                r: "6",
-                strokeWidth: "2",
-                stroke: "#003d66",
-              },
-            }}
-            bezier
-            style={{
-              marginVertical: 8,
+            ],
+          }}
+          width={Dimensions.get("window").width - 10} // from react-native
+          height={220}
+          yAxisLabel="$"
+          yAxisInterval={1} // optional, defaults to 1
+          chartConfig={{
+            backgroundColor: "#e26a00",
+            backgroundGradientFrom: "#007acc",
+            backgroundGradientTo: "#0099ff",
+            decimalPlaces: 2, // optional, defaults to 2dp
+            color: (opacity = 1) => `rgba(255, 255, 255, ${opacity})`,
+            labelColor: (opacity = 1) => `rgba(255, 255, 255, ${opacity})`,
+            style: {
               borderRadius: 16,
-            }}
-          />
-          <View>
-            <Button title="Next Day" onPress={nextDay} />
-          </View>
+            },
+            propsForDots: {
+              r: "6",
+              strokeWidth: "2",
+              stroke: "#003d66",
+            },
+          }}
+          bezier
+          style={{
+            marginVertical: 8,
+            borderRadius: 16,
+          }}
+        />
+        <View>
+          <Button title="Next Day" onPress={nextDay} />
         </View>
-      ))}
+      </View>
     </View>
   );
 }
@@ -178,6 +201,12 @@ const styles = StyleSheet.create({
     flex: 1,
     backgroundColor: "#b3c6ff",
     alignItems: "center",
+    justifyContent: "space-evenly",
+  },
+  margintop: {
+    width: "50%",
+    flex: 1,
+    backgroundColor: "#b3c6ff",
     justifyContent: "space-evenly",
   },
 });
