@@ -10,9 +10,10 @@ import {
   StackedBarChart,
 } from "react-native-chart-kit";
 import RNPickerSelect from "react-native-picker-select";
+import { TextInput } from "react-native";
 
 export default function App() {
-  let [gameTime, setGameTime] = React.useState(1546340400000);
+  let [gameTime, setGameTime] = React.useState(1546426800000);
 
   let dateFormat = (milisecs) => {
     let ourDate = new Date(milisecs);
@@ -42,16 +43,19 @@ export default function App() {
 
   let teslaData = require("./tesla.json");
   let microsoftData = require("./microsoft.json");
+  let appleData = require("./apple.json");
+  let amazonData = require("./amazon.json");
+  let googleData = require("./google.json");
 
   let [defaultStocks, setDefaultStocks] = React.useState({
     "tesla data": teslaData,
     "microsoft data": microsoftData,
+    "apple data": appleData,
+    "amazon data": amazonData,
+    "google data": googleData,
   });
 
   let [chosenStock, setChosenStock] = React.useState(microsoftData);
-
-  let [startSetup, setStartSetup] = React.useState(["x"]);
-  let [chartSetup, setChartSetup] = React.useState([]);
 
   let chosenOldData = (data) => {
     if (data !== undefined) {
@@ -75,18 +79,18 @@ export default function App() {
         oldData.day.push(simpleDateFormat(timeTravelTime));
         timeTravelTime = timeTravelTime - 86400000;
       }
-      if (oldData.price.length >= 6) {
+      if (oldData.price.length >= 5) {
         return;
       }
       check();
     };
     check();
-    if (oldData.price.length >= 6) {
+    if (oldData.price.length >= 5) {
       let oldDataGoodFormat = {
         price: [],
         day: [],
       };
-      for (let i = oldData.price.length - 1; i > 0; i = i - 1) {
+      for (let i = oldData.price.length - 1; i >= 0; i = i - 1) {
         oldDataGoodFormat.price.push(oldData.price[i]);
         oldDataGoodFormat.day.push(oldData.day[i]);
       }
@@ -99,11 +103,6 @@ export default function App() {
     day: chosenOldData().day,
     price: chosenOldData().price,
   });
-
-  let startTrading = () => {
-    setStartSetup([]);
-    setChartSetup(["x"]);
-  };
 
   let nextDay = () => {
     stockData.day = stockData.day.splice(1, 5);
@@ -118,8 +117,8 @@ export default function App() {
         stockData.price.push(
           chosenStock["Time Series (Daily)"][dateFormat(gameTime)]["1. open"]
         );
-        stockData.day.push(simpleDateFormat(gameTime));
         gameTime = gameTime + 86400000;
+        stockData.day.push(simpleDateFormat(gameTime));
       }
     };
     check();
@@ -128,8 +127,31 @@ export default function App() {
     setRerender(!rerender);
   };
 
+  let startingDay = () => {
+    let startingTime = gameTime;
+    let today = { day: 0, price: 0 };
+    let check = () => {
+      if (
+        chosenStock["Time Series (Daily)"][dateFormat(startingTime)] ===
+        undefined
+      ) {
+        startingTime = startingTime - 86400000;
+        check();
+      } else {
+        today.price =
+          chosenStock["Time Series (Daily)"][dateFormat(startingTime)][
+            "1. open"
+          ];
+
+        today.day = dateFormat(startingTime);
+        startingTime = gameTime + 86400000;
+      }
+    };
+    check();
+    return today;
+  };
+
   let settingStockData = (value) => {
-    console.log(value);
     let prepearingName = value + " data";
     setStockData({
       day: chosenOldData(defaultStocks[prepearingName]).day,
@@ -141,16 +163,35 @@ export default function App() {
   return (
     <View style={styles.container}>
       <View>
+        <View style={styles.row}>
+          <Text>{startingDay().day}</Text>
+          <Text>{dateFormat(gameTime)}</Text>
+        </View>
+        <View style={styles.row}>
+          <Text>{dateFormat(gameTime)}</Text>
+        </View>
+        <TextInput
+          style={{
+            height: 40,
+            borderColor: "gray",
+            borderWidth: 1,
+            backgroundColor: "#ffffff",
+          }}
+          onChangeText={(text) => onChangeText(text)}
+          value={"Yieks"}
+        />
         <RNPickerSelect
           onValueChange={(value) => settingStockData(value)}
           placeholder={{
             label: "Microsoft",
             value: "microsoft",
-            color: "black",
+            color: "#00001a",
           }}
           items={[
-            { label: "Tesla", value: "tesla", color: "black" },
-            { label: "Hockey", value: "microsoft", color: "black" },
+            { label: "Apple", value: "apple", color: "#00001a" },
+            { label: "Tesla", value: "tesla", color: "#00001a" },
+            { label: "Google", value: "google", color: "#00001a" },
+            { label: "Amazon", value: "amazon", color: "#00001a" },
           ]}
         />
         <LineChart
@@ -203,10 +244,9 @@ const styles = StyleSheet.create({
     alignItems: "center",
     justifyContent: "space-evenly",
   },
-  margintop: {
-    width: "50%",
-    flex: 1,
-    backgroundColor: "#b3c6ff",
+  row: {
+    alignItems: "center",
     justifyContent: "space-evenly",
+    flexDirection: "row",
   },
 });
