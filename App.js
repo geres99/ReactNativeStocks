@@ -14,6 +14,8 @@ import RNPickerSelect from "react-native-picker-select";
 import { TextInput } from "react-native";
 
 export default function App() {
+  let size = useWindowSize();
+
   let [gameTime, setGameTime] = React.useState(1546426800000);
 
   let dateFormat = (milisecs) => {
@@ -249,6 +251,31 @@ export default function App() {
     { label: "Amazon", value: "amazon", color: "#00001a" },
   ]);
   let [inputValue, setInputValue] = React.useState("");
+
+  function useWindowSize() {
+    const [windowSize, setWindowSize] = useState({
+      width: undefined,
+
+      height: undefined,
+    });
+
+    useEffect(() => {
+      function handleResize() {
+        setWindowSize({
+          width: window.innerWidth,
+
+          height: window.innerHeight,
+        });
+      }
+
+      window.addEventListener("resize", handleResize);
+      handleResize();
+
+      return () => window.removeEventListener("resize", handleResize);
+    }, []);
+
+    return windowSize;
+  }
 
   return (
     <View style={styles.container}>
