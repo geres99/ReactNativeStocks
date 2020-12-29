@@ -62,7 +62,7 @@ export default function App() {
       chosenStock = data;
     }
     let timeTravelTime = gameTime;
-    let oldData = { price: [], day: [] };
+    let oldData = { price: [], day: [], date: [] };
     let check = () => {
       if (
         chosenStock["Time Series (Daily)"][dateFormat(timeTravelTime)] ===
@@ -77,6 +77,7 @@ export default function App() {
           ]
         );
         oldData.day.push(simpleDateFormat(timeTravelTime));
+        oldData.date.push(timeTravelTime);
         timeTravelTime = timeTravelTime - 86400000;
       }
       if (oldData.price.length >= 5) {
@@ -89,10 +90,12 @@ export default function App() {
       let oldDataGoodFormat = {
         price: [],
         day: [],
+        date: [],
       };
       for (let i = oldData.price.length - 1; i >= 0; i = i - 1) {
         oldDataGoodFormat.price.push(oldData.price[i]);
         oldDataGoodFormat.day.push(oldData.day[i]);
+        oldDataGoodFormat.date.push(oldData.date[i]);
       }
       return oldDataGoodFormat;
     }
@@ -102,14 +105,18 @@ export default function App() {
   let [stockData, setStockData] = React.useState({
     day: chosenOldData().day,
     price: chosenOldData().price,
+    date: chosenOldData().date,
   });
 
   let nextDay = () => {
+    console.log(stockData);
     gameTime = gameTime + 86400000;
     let daysInChart = stockData.day.splice(1, 5);
     stockData.day = daysInChart;
     let pricesInChart = stockData.price.splice(1, 5);
     stockData.price = pricesInChart;
+    let dateInChart = stockData.date.splice(1, 5);
+    stockData.date = dateInChart;
     let check = () => {
       if (
         chosenStock["Time Series (Daily)"][dateFormat(gameTime)] === undefined
@@ -127,6 +134,7 @@ export default function App() {
           stockData.price.push(
             chosenStock["Time Series (Daily)"][dateFormat(gameTime)]["1. open"]
           );
+          stockData.date.push(gameTime);
           stockData.day.push(simpleDateFormat(gameTime));
         } else {
           gameTime = gameTime + 86400000;
@@ -141,15 +149,15 @@ export default function App() {
   };
 
   let previousDay = () => {
-    let newChart = { day: [], price: [] };
+    let newChart = { day: [], price: [], date: [] };
     for (let i = stockData.price.length - 1; i >= 0; i = i - 1) {
       newChart.day.push(stockData.day[i]);
       newChart.price.push(stockData.price[i]);
+      newChart.date.push(stockData.date[i]);
     }
-    console.log(newChart.day);
     stockData.day = newChart.day.splice(1, 5);
     stockData.price = newChart.price.splice(1, 5);
-    console.log(newChart.day);
+    stockData.date = newChart.date.splice(1, 5);
 
     let check = () => {
       if (
@@ -168,6 +176,7 @@ export default function App() {
           stockData.price.push(
             chosenStock["Time Series (Daily)"][dateFormat(gameTime)]["1. open"]
           );
+          stockData.date.push(gameTime);
           stockData.day.push(simpleDateFormat(gameTime));
         } else {
           gameTime = gameTime - 86400000;
@@ -177,11 +186,12 @@ export default function App() {
     };
     check();
 
-    newChart = { day: [], price: [] };
+    newChart = { day: [], price: [], date: [] };
 
     for (let i = stockData.price.length - 1; i >= 0; i = i - 1) {
       newChart.day.push(stockData.day[i]);
       newChart.price.push(stockData.price[i]);
+      newChart.date.push(stockData.date[i]);
     }
 
     setGameTime(gameTime);
@@ -189,62 +199,53 @@ export default function App() {
     setRerender(!rerender);
   };
 
-  let startingDay = () => {
-    let startingTime = gameTime;
-    let today = { day: 0, price: 0 };
-    let check = () => {
-      if (
-        chosenStock["Time Series (Daily)"][dateFormat(startingTime)] ===
-        undefined
-      ) {
-        startingTime = startingTime - 86400000;
-        check();
-      } else {
-        today.price =
-          chosenStock["Time Series (Daily)"][dateFormat(startingTime)][
-            "1. open"
-          ];
-
-        today.day = dateFormat(startingTime);
-        startingTime = gameTime + 86400000;
-      }
-    };
-    check();
-    return today;
-  };
-
   let settingStockData = (value) => {
     let prepearingName = value + " data";
     setStockData({
       day: chosenOldData(defaultStocks[prepearingName]).day,
       price: chosenOldData(defaultStocks[prepearingName]).price,
+      date: chosenOldData(defaultStocks[prepearingName]).date,
     });
     setChosenStock(defaultStocks[prepearingName]);
   };
+
+  let addStock = () => {
+    setAddedStocks([
+      ...addedStocks,
+      { label: "Amazon", value: "yieks", color: "#00001a" },
+    ]);
+    setInputValue("");
+    defaultStocks["yieks data"] = googleData;
+    setDefaultStocks(defaultStocks);
+    setRerender(!rerender);
+    console.log(defaultStocks);
+  };
+
+  let [addedStocks, setAddedStocks] = React.useState([
+    { label: "Apple", value: "apple", color: "#00001a" },
+    { label: "Tesla", value: "tesla", color: "#00001a" },
+    { label: "Google", value: "google", color: "#00001a" },
+    { label: "Amazon", value: "amazon", color: "#00001a" },
+  ]);
+  let [inputValue, setInputValue] = React.useState("");
 
   return (
     <View style={styles.container}>
       <View>
         <View style={styles.row}>
-          <Text>{startingDay().day}</Text>
-          <Text>{dateFormat(gameTime)}</Text>
+          <Text style={styles.bigText}>{"Stock Price:"}</Text>
         </View>
         <View style={styles.row}>
-          <Text>
+          <Text style={styles.bigText}>
             {stockData.price[4]}
             {"$"}
           </Text>
         </View>
-        <TextInput
-          style={{
-            height: 40,
-            borderColor: "gray",
-            borderWidth: 1,
-            backgroundColor: "#ffffff",
-          }}
-          onChangeText={(text) => onChangeText(text)}
-          value={"Yieks"}
-        />
+        <View style={styles.row}>
+          <Button title="<" onPress={previousDay} />
+          <Text style={styles.bigText}>{dateFormat(stockData.date[4])}</Text>
+          <Button title=">" onPress={nextDay} />
+        </View>
         <RNPickerSelect
           onValueChange={(value) => settingStockData(value)}
           placeholder={{
@@ -252,12 +253,7 @@ export default function App() {
             value: "microsoft",
             color: "#00001a",
           }}
-          items={[
-            { label: "Apple", value: "apple", color: "#00001a" },
-            { label: "Tesla", value: "tesla", color: "#00001a" },
-            { label: "Google", value: "google", color: "#00001a" },
-            { label: "Amazon", value: "amazon", color: "#00001a" },
-          ]}
+          items={addedStocks}
         />
         <LineChart
           data={{
@@ -294,10 +290,20 @@ export default function App() {
             borderRadius: 16,
           }}
         />
-        <View>
-          <Button title="Next Day" onPress={nextDay} />
-          <Button title="Previous Day" onPress={previousDay} />
-        </View>
+      </View>
+      <View style={styles.row}>
+        <Text style={styles.bigText}>{"Add new stocks:"}</Text>
+      </View>
+      <View style={styles.stockAdder}>
+        <TextInput
+          style={{
+            height: 35,
+            backgroundColor: "#ffffff",
+          }}
+          onChangeText={(text) => setInputValue(text)}
+          value={inputValue}
+        />
+        <Button color="#33ff33" title="+" onPress={addStock} />
       </View>
     </View>
   );
@@ -314,5 +320,16 @@ const styles = StyleSheet.create({
     alignItems: "center",
     justifyContent: "space-evenly",
     flexDirection: "row",
+  },
+  bigText: {
+    fontSize: 30,
+    fontWeight: "bold",
+  },
+  stockAdder: {
+    alignItems: "center",
+    justifyContent: "space-evenly",
+    flexDirection: "row",
+    borderColor: "gray",
+    borderWidth: 1,
   },
 });
