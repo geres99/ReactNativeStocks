@@ -263,8 +263,13 @@ export default function App() {
         });
       }
 
-      window.addEventListener("resize", handleResize);
-      handleResize();
+      if (
+        typeof window !== "undefined" &&
+        typeof window.addEventListener !== "undefined"
+      ) {
+        window.addEventListener("resize", handleResize);
+        handleResize();
+      }
 
       return () => window.removeEventListener("resize", handleResize);
     }, []);
