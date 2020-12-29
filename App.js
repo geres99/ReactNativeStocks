@@ -1,15 +1,6 @@
-import { StatusBar } from "expo-status-bar";
 import React from "react";
-import { useState, useEffect } from "react";
 import { StyleSheet, Button, Text, View, Dimensions } from "react-native";
-import {
-  LineChart,
-  BarChart,
-  PieChart,
-  ProgressChart,
-  ContributionGraph,
-  StackedBarChart,
-} from "react-native-chart-kit";
+import { LineChart } from "react-native-chart-kit";
 import RNPickerSelect from "react-native-picker-select";
 import { TextInput } from "react-native";
 
@@ -112,7 +103,6 @@ export default function App() {
   });
 
   let nextDay = () => {
-    console.log(stockData);
     gameTime = gameTime + 86400000;
     let daysInChart = stockData.day.splice(1, 5);
     stockData.day = daysInChart;
@@ -214,14 +204,17 @@ export default function App() {
 
   let addStock = () => {
     let addingStocks = (name, data) => {
-      setAddedStocks([
-        ...addedStocks,
-        { label: name, value: name, color: "#00001a" },
-      ]);
-      defaultStocks[name + " data"] = data;
-      setDefaultStocks(defaultStocks);
-      setInputValue("");
-      setRerender(!rerender);
+      if (data["Time Series (Daily)"] === undefined) {
+      } else {
+        setAddedStocks([
+          ...addedStocks,
+          { label: name, value: name, color: "#00001a" },
+        ]);
+        defaultStocks[name + " data"] = data;
+        setDefaultStocks(defaultStocks);
+        setInputValue("");
+        setRerender(!rerender);
+      }
     };
 
     async function getStockDataFromApi() {
@@ -240,8 +233,6 @@ export default function App() {
 
     let dataFromAPI = getStockDataFromApi();
     dataFromAPI.then((data) => addingStocks(inputValue, data));
-
-    console.log(defaultStocks);
   };
 
   let [addedStocks, setAddedStocks] = React.useState([
@@ -312,15 +303,15 @@ export default function App() {
               },
             ],
           }}
-          width={Dimensions.get("window").width - 10} // from react-native
+          width={Dimensions.get("window").width - 10}
           height={220}
           yAxisLabel="$"
-          yAxisInterval={1} // optional, defaults to 1
+          yAxisInterval={1}
           chartConfig={{
             backgroundColor: "#e26a00",
             backgroundGradientFrom: "#007acc",
             backgroundGradientTo: "#0099ff",
-            decimalPlaces: 2, // optional, defaults to 2dp
+            decimalPlaces: 2,
             color: (opacity = 1) => `rgba(255, 255, 255, ${opacity})`,
             labelColor: (opacity = 1) => `rgba(255, 255, 255, ${opacity})`,
             style: {
