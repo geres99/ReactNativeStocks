@@ -1,5 +1,6 @@
 import { StatusBar } from "expo-status-bar";
 import React from "react";
+import { useState, useEffect } from "react";
 import { StyleSheet, Button, Text, View, Dimensions } from "react-native";
 import {
   LineChart,
@@ -210,14 +211,34 @@ export default function App() {
   };
 
   let addStock = () => {
-    setAddedStocks([
-      ...addedStocks,
-      { label: "Amazon", value: "yieks", color: "#00001a" },
-    ]);
-    setInputValue("");
-    defaultStocks["yieks data"] = googleData;
-    setDefaultStocks(defaultStocks);
-    setRerender(!rerender);
+    let addingStocks = (name, data) => {
+      setAddedStocks([
+        ...addedStocks,
+        { label: name, value: name, color: "#00001a" },
+      ]);
+      defaultStocks[name + " data"] = data;
+      setDefaultStocks(defaultStocks);
+      setInputValue("");
+      setRerender(!rerender);
+    };
+
+    async function getStockDataFromApi() {
+      try {
+        let response = await fetch(
+          "https://www.alphavantage.co/query?function=TIME_SERIES_DAILY_ADJUSTED&symbol=" +
+            inputValue +
+            "&outputsize=full&apikey=BQAIUGFT8QTILWMH"
+        );
+        let responseJson = await response.json();
+        return responseJson;
+      } catch (error) {
+        console.error(error);
+      }
+    }
+
+    let dataFromAPI = getStockDataFromApi();
+    dataFromAPI.then((data) => addingStocks(inputValue, data));
+
     console.log(defaultStocks);
   };
 
