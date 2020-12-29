@@ -105,8 +105,11 @@ export default function App() {
   });
 
   let nextDay = () => {
-    stockData.day = stockData.day.splice(1, 5);
-    stockData.price = stockData.price.splice(1, 5);
+    gameTime = gameTime + 86400000;
+    let daysInChart = stockData.day.splice(1, 5);
+    stockData.day = daysInChart;
+    let pricesInChart = stockData.price.splice(1, 5);
+    stockData.price = pricesInChart;
     let check = () => {
       if (
         chosenStock["Time Series (Daily)"][dateFormat(gameTime)] === undefined
@@ -114,16 +117,75 @@ export default function App() {
         gameTime = gameTime + 86400000;
         check();
       } else {
-        stockData.price.push(
-          chosenStock["Time Series (Daily)"][dateFormat(gameTime)]["1. open"]
-        );
-        gameTime = gameTime + 86400000;
-        stockData.day.push(simpleDateFormat(gameTime));
+        if (
+          daysInChart[0] !== simpleDateFormat(gameTime) &&
+          stockData.day[0] !== simpleDateFormat(gameTime) &&
+          stockData.day[1] !== simpleDateFormat(gameTime) &&
+          stockData.day[2] !== simpleDateFormat(gameTime) &&
+          stockData.day[3] !== simpleDateFormat(gameTime)
+        ) {
+          stockData.price.push(
+            chosenStock["Time Series (Daily)"][dateFormat(gameTime)]["1. open"]
+          );
+          stockData.day.push(simpleDateFormat(gameTime));
+        } else {
+          gameTime = gameTime + 86400000;
+          check();
+        }
       }
     };
     check();
     setGameTime(gameTime);
     setStockData(stockData);
+    setRerender(!rerender);
+  };
+
+  let previousDay = () => {
+    let newChart = { day: [], price: [] };
+    for (let i = stockData.price.length - 1; i >= 0; i = i - 1) {
+      newChart.day.push(stockData.day[i]);
+      newChart.price.push(stockData.price[i]);
+    }
+    console.log(newChart.day);
+    stockData.day = newChart.day.splice(1, 5);
+    stockData.price = newChart.price.splice(1, 5);
+    console.log(newChart.day);
+
+    let check = () => {
+      if (
+        chosenStock["Time Series (Daily)"][dateFormat(gameTime)] === undefined
+      ) {
+        gameTime = gameTime - 86400000;
+        check();
+      } else {
+        if (
+          newChart.day[0] !== simpleDateFormat(gameTime) &&
+          stockData.day[0] !== simpleDateFormat(gameTime) &&
+          stockData.day[1] !== simpleDateFormat(gameTime) &&
+          stockData.day[2] !== simpleDateFormat(gameTime) &&
+          stockData.day[3] !== simpleDateFormat(gameTime)
+        ) {
+          stockData.price.push(
+            chosenStock["Time Series (Daily)"][dateFormat(gameTime)]["1. open"]
+          );
+          stockData.day.push(simpleDateFormat(gameTime));
+        } else {
+          gameTime = gameTime - 86400000;
+          check();
+        }
+      }
+    };
+    check();
+
+    newChart = { day: [], price: [] };
+
+    for (let i = stockData.price.length - 1; i >= 0; i = i - 1) {
+      newChart.day.push(stockData.day[i]);
+      newChart.price.push(stockData.price[i]);
+    }
+
+    setGameTime(gameTime);
+    setStockData(newChart);
     setRerender(!rerender);
   };
 
@@ -168,7 +230,10 @@ export default function App() {
           <Text>{dateFormat(gameTime)}</Text>
         </View>
         <View style={styles.row}>
-          <Text>{dateFormat(gameTime)}</Text>
+          <Text>
+            {stockData.price[4]}
+            {"$"}
+          </Text>
         </View>
         <TextInput
           style={{
@@ -231,6 +296,7 @@ export default function App() {
         />
         <View>
           <Button title="Next Day" onPress={nextDay} />
+          <Button title="Previous Day" onPress={previousDay} />
         </View>
       </View>
     </View>
