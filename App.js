@@ -1,4 +1,5 @@
 import React from "react";
+import { useState, useEffect } from "react";
 import { StyleSheet, Button, Text, View, Dimensions } from "react-native";
 import { LineChart } from "react-native-chart-kit";
 import RNPickerSelect from "react-native-picker-select";
@@ -194,6 +195,9 @@ export default function App() {
 
   let settingStockData = (value) => {
     let prepearingName = value + " data";
+    previousDay();
+    nextDay();
+    nextDay();
     setStockData({
       day: chosenOldData(defaultStocks[prepearingName]).day,
       price: chosenOldData(defaultStocks[prepearingName]).price,
